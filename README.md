@@ -4,8 +4,8 @@
 <p align="center">A video editor your agent can see.</p>
 
 <p align="center">
-  <a href="https://cutloupe.vercel.app">Website</a> ·
-  <a href="https://cutloupe.vercel.app/studio/">Studio demo</a> ·
+  <a href="https://bryankwandou.github.io/cutloupe">Website</a> ·
+  <a href="https://bryankwandou.github.io/cutloupe/studio/">Studio demo</a> ·
   <a href="docs/DEVNET.md">Devnet proof</a> ·
   <a href="docs/DESIGN.md">Design notes</a>
 </p>

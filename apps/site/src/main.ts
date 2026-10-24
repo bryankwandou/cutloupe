@@ -330,6 +330,6 @@ input.addEventListener("change", () => { const f = input.files?.[0]; if (f) veri
 drop.addEventListener("drop", (e) => { e.preventDefault(); const f = (e as DragEvent).dataTransfer?.files[0]; if (f) verify(f, f.name); });
 $("#verify-sample").addEventListener("click", async () => {
   out.textContent = t("v.hashing");
-  const res = await fetch("/media/sealed-demo.mp4");
+  const res = await fetch("./media/sealed-demo.mp4");
   verify(await res.blob(), "sealed-demo.mp4");
 });

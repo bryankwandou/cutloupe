@@ -7,16 +7,16 @@
 <meta name="description" content="An MCP server with a live studio. Your agent edits the timeline, you watch every change land, and the agent renders and checks real frames before it calls the job done. Exports to DaVinci Resolve, Premiere Pro, CapCut and Remotion." />
 <meta property="og:title" content="Cutloupe: a video editor your agent can see" />
 <meta property="og:description" content="Your agent edits, you watch it live, and it checks the real frames. Exports to Resolve, Premiere, CapCut and Remotion." />
-<meta property="og:image" content="/og.png" />
+<meta property="og:image" content="https://bryankwandou.github.io/cutloupe/og.png" />
 <meta property="og:type" content="website" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="theme-color" content="#08090a" />
-<link rel="icon" href="/logo.svg" type="image/svg+xml" />
-<link rel="stylesheet" href="/assets/main.css" />
-<link rel="alternate" hreflang="en" href="/?lang=en" />
-<link rel="alternate" hreflang="id" href="/?lang=id" />
-<link rel="alternate" hreflang="es" href="/?lang=es" />
-<link rel="alternate" hreflang="ja" href="/?lang=ja" />
+<link rel="icon" href="./logo.svg" type="image/svg+xml" />
+<link rel="stylesheet" href="./assets/main.css" />
+<link rel="alternate" hreflang="en" href="./?lang=en" />
+<link rel="alternate" hreflang="id" href="./?lang=id" />
+<link rel="alternate" hreflang="es" href="./?lang=es" />
+<link rel="alternate" hreflang="ja" href="./?lang=ja" />
 </head>
 <body>
 <a class="skip" href="#main" data-i18n="skip">Skip to content</a>
@@ -24,7 +24,7 @@
 <header class="top" id="top">
   <div class="wrap top-row">
     <a class="brand" href="#top" aria-label="Cutloupe home">
-      <img src="/logo.svg" width="28" height="28" alt="" />
+      <img src="./logo.svg" width="28" height="28" alt="" />
       <span>cutloupe</span>
     </a>
     <nav class="nav" aria-label="Sections">
@@ -68,7 +68,7 @@
         <code>git clone https://github.com/bryankwandou/cutloupe</code>
         <button class="copy" type="button" data-i18n="copy">Copy</button>
       </div>
-      <a class="btn btn-primary" href="/studio/" data-i18n="hero.demo">Open the studio demo</a>
+      <a class="btn btn-primary" href="./studio/" data-i18n="hero.demo">Open the studio demo</a>
       <a class="btn" href="#walkthrough" data-i18n="hero.watch">Watch the walkthrough</a>
     </div>
   </div>
@@ -78,11 +78,11 @@
       <div class="window-bar">
         <span class="lights" aria-hidden="true"><i></i><i></i><i></i></span>
         <span class="window-title mono">127.0.0.1:4321 · cutloupe studio</span>
-        <a class="window-pop" href="/studio/" target="_blank" rel="noopener" data-i18n="hero.pop">Open full screen</a>
+        <a class="window-pop" href="./studio/" target="_blank" rel="noopener" data-i18n="hero.pop">Open full screen</a>
       </div>
       <div class="window-body">
-        <iframe id="hero-studio" title="Cutloupe studio running a scripted agent session" loading="lazy" data-src="/studio/"></iframe>
-        <img class="window-fallback" src="/media/studio.png" alt="The Cutloupe studio: library on the left, preview in the middle, the agent's activity on the right, and a four-track timeline below." width="1440" height="900" />
+        <iframe id="hero-studio" title="Cutloupe studio running a scripted agent session" loading="lazy" data-src="./studio/"></iframe>
+        <img class="window-fallback" src="./media/studio.png" alt="The Cutloupe studio: library on the left, preview in the middle, the agent's activity on the right, and a four-track timeline below." width="1440" height="900" />
         <button class="window-start" type="button" id="hero-start">
           <span class="play-icon" aria-hidden="true"></span>
           <span data-i18n="hero.start">Start the demo session</span>
@@ -144,8 +144,8 @@
     <h2 data-i18n="walk.title">Two minutes, start to finish.</h2>
     <p class="section-lede" data-i18n="walk.lede">Recorded in headless Chrome from the real studio and this page, then scored with a track from Cutloupe's own library. There is no narration; the captions are in the picture.</p>
     <div class="video-frame reveal">
-      <video id="walk-video" controls preload="metadata" playsinline poster="/media/walkthrough-poster.jpg">
-        <source src="/media/walkthrough.mp4" type="video/mp4" />
+      <video id="walk-video" controls preload="metadata" playsinline poster="./media/walkthrough-poster.jpg">
+        <source src="./media/walkthrough.mp4" type="video/mp4" />
       </video>
     </div>
   </div>
@@ -165,8 +165,8 @@
       </div>
       <div class="sees-grid">
         <div class="sees-media">
-          <img id="sees-sheet" role="tabpanel" aria-labelledby="tab-sheet" src="/media/look-sheet.png" width="992" height="436" alt="Six frames from across the reel, each labelled with its time." loading="lazy" />
-          <img id="sees-frame" role="tabpanel" aria-labelledby="tab-frame" src="/media/look-frame.jpg" width="960" height="540" alt="One full frame at 2.00 seconds: test pattern, title and a caption word in amber." loading="lazy" hidden />
+          <img id="sees-sheet" role="tabpanel" aria-labelledby="tab-sheet" src="./media/look-sheet.png" width="992" height="436" alt="Six frames from across the reel, each labelled with its time." loading="lazy" />
+          <img id="sees-frame" role="tabpanel" aria-labelledby="tab-frame" src="./media/look-frame.jpg" width="960" height="540" alt="One full frame at 2.00 seconds: test pattern, title and a caption word in amber." loading="lazy" hidden />
         </div>
         <pre class="sees-text mono" aria-label="Text returned with the frame"><span class="c-dim">// look({ t: 2 }) returns this alongside the image</span>
 At 2.00s, bottom to top:
@@ -363,16 +363,16 @@ args = ["C:/path/to/cutloupe/packages/mcp/bin/cutloupe.mjs"]</pre>
 
 <footer class="foot">
   <div class="wrap foot-row">
-    <div class="brand"><img src="/logo.svg" width="22" height="22" alt="" /><span>cutloupe</span></div>
+    <div class="brand"><img src="./logo.svg" width="22" height="22" alt="" /><span>cutloupe</span></div>
     <p data-i18n="foot.line">MIT license. Built on ffmpeg, headless Chrome and the Model Context Protocol.</p>
     <nav class="foot-links">
       <a href="https://github.com/bryankwandou/cutloupe">GitHub</a>
-      <a href="/studio/" data-i18n="foot.studio">Studio demo</a>
+      <a href="./studio/" data-i18n="foot.studio">Studio demo</a>
       <a href="https://github.com/bryankwandou/cutloupe/blob/main/docs/DEVNET.md" data-i18n="foot.devnet">Devnet proof</a>
     </nav>
   </div>
 </footer>
 
-<script type="module" src="/assets/main.js"></script>
+<script type="module" src="./assets/main.js"></script>
 </body>
 </html>
