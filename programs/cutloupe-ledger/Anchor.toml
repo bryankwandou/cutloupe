@@ -1,0 +1,19 @@
+[toolchain]
+package_manager = "npm"
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.devnet]
+cutloupe_ledger = "G6kWfHR1X2tHFgwHvrc5soiXwUF4bYXprv7YMTJnx5eY"
+
+[programs.localnet]
+cutloupe_ledger = "G6kWfHR1X2tHFgwHvrc5soiXwUF4bYXprv7YMTJnx5eY"
+
+[provider]
+cluster = "devnet"
+wallet = "~/.config/solana/bersih-devnet.json"
+
+[scripts]
+test = "node scripts/smoke-devnet.mjs ~/.config/solana/bersih-devnet.json"

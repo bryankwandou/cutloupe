@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cutloupe: a video editor your agent can see</title>
+<meta name="description" content="An MCP server with a live studio. Your agent edits the timeline, you watch every change land, and the agent renders and checks real frames before it calls the job done. Exports to DaVinci Resolve, Premiere Pro, CapCut and Remotion." />
+<meta property="og:title" content="Cutloupe: a video editor your agent can see" />
+<meta property="og:description" content="Your agent edits, you watch it live, and it checks the real frames. Exports to Resolve, Premiere, CapCut and Remotion." />
+<meta property="og:image" content="/og.png" />
+<meta property="og:type" content="website" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="theme-color" content="#08090a" />
+<link rel="icon" href="/logo.svg" type="image/svg+xml" />
+<link rel="stylesheet" href="/assets/main.css" />
+<link rel="alternate" hreflang="en" href="/?lang=en" />
+<link rel="alternate" hreflang="id" href="/?lang=id" />
+<link rel="alternate" hreflang="es" href="/?lang=es" />
+<link rel="alternate" hreflang="ja" href="/?lang=ja" />
+</head>
+<body>
+<a class="skip" href="#main" data-i18n="skip">Skip to content</a>
+
+<header class="top" id="top">
+  <div class="wrap top-row">
+    <a class="brand" href="#top" aria-label="Cutloupe home">
+      <img src="/logo.svg" width="28" height="28" alt="" />
+      <span>cutloupe</span>
+    </a>
+    <nav class="nav" aria-label="Sections">
+      <a href="#loop" data-i18n="nav.loop">How it works</a>
+      <a href="#sees" data-i18n="nav.sees">What it sees</a>
+      <a href="#tools" data-i18n="nav.tools">Tools</a>
+      <a href="#exports" data-i18n="nav.exports">Exports</a>
+      <a href="#ledger" data-i18n="nav.ledger">Ledger</a>
+      <a href="#install" data-i18n="nav.install">Install</a>
+    </nav>
+    <div class="top-right">
+      <span class="tc" id="scroll-tc" aria-hidden="true">00:00:00:00</span>
+      <label class="lang">
+        <span class="sr" data-i18n="lang.label">Language</span>
+        <select id="lang" aria-label="Language">
+          <option value="en">English</option>
+          <option value="id">Indonesia</option>
+          <option value="es">Español</option>
+          <option value="ja">日本語</option>
+        </select>
+      </label>
+      <a class="gh" href="https://github.com/bryankwandou/cutloupe" aria-label="GitHub repository">
+        <svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      </a>
+    </div>
+  </div>
+  <div class="ruler" aria-hidden="true"><div class="ruler-marks" id="ruler-marks"></div><div class="playhead" id="playhead"></div></div>
+</header>
+
+<main id="main">
+
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <div class="wrap">
+    <p class="kicker mono" data-i18n="hero.kicker">MCP server for Claude Code, Antigravity, Codex and other agents. Runs on Windows, macOS and Linux.</p>
+    <h1 class="hero-title" id="hero-title" data-i18n-html="hero.title">A video editor your agent can <em>see</em>.</h1>
+    <p class="lede" data-i18n="hero.lede">Cutloupe gives your agent a real timeline. It cuts, titles, captions and scores the video while you watch each edit land in the studio. Before it says the job is done, it renders the actual frames and looks at them.</p>
+    <div class="hero-actions">
+      <div class="cmd" data-copy="git clone https://github.com/bryankwandou/cutloupe && cd cutloupe && npm install && npm run build">
+        <span class="cmd-prompt" aria-hidden="true">$</span>
+        <code>git clone https://github.com/bryankwandou/cutloupe</code>
+        <button class="copy" type="button" data-i18n="copy">Copy</button>
+      </div>
+      <a class="btn btn-primary" href="/studio/" data-i18n="hero.demo">Open the studio demo</a>
+      <a class="btn" href="#walkthrough" data-i18n="hero.watch">Watch the walkthrough</a>
+    </div>
+  </div>
+
+  <div class="wrap wrap-wide">
+    <figure class="window reveal" id="hero-window">
+      <div class="window-bar">
+        <span class="lights" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="window-title mono">127.0.0.1:4321 · cutloupe studio</span>
+        <a class="window-pop" href="/studio/" target="_blank" rel="noopener" data-i18n="hero.pop">Open full screen</a>
+      </div>
+      <div class="window-body">
+        <iframe id="hero-studio" title="Cutloupe studio running a scripted agent session" loading="lazy" data-src="/studio/"></iframe>
+        <img class="window-fallback" src="/media/studio.png" alt="The Cutloupe studio: library on the left, preview in the middle, the agent's activity on the right, and a four-track timeline below." width="1440" height="900" />
+        <button class="window-start" type="button" id="hero-start">
+          <span class="play-icon" aria-hidden="true"></span>
+          <span data-i18n="hero.start">Start the demo session</span>
+        </button>
+      </div>
+      <figcaption data-i18n="hero.caption">This is the real studio in your browser, driven by a scripted agent that uses the same operations as the MCP server. Amber marks the agent's edits. Drag a clip yourself and the session keeps going.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============ LOOP ============ -->
+<section class="section" id="loop">
+  <div class="wrap">
+    <p class="eyebrow mono"><span class="tc-label">00:00:12:00</span><span data-i18n="loop.eyebrow">How it works</span></p>
+    <h2 data-i18n="loop.title">Edit, show, look, fix.</h2>
+    <p class="section-lede" data-i18n="loop.lede">Most agent video tools write a file and hope. Cutloupe closes the loop, so the agent finds its own mistakes before you have to.</p>
+
+    <div class="loop">
+      <div class="loop-track" aria-hidden="true">
+        <svg viewBox="0 0 800 120" class="loop-svg" preserveAspectRatio="none">
+          <path id="loop-path" d="M40 60 H760" />
+        </svg>
+        <div class="loop-dot" id="loop-dot"></div>
+      </div>
+      <ol class="loop-steps" id="loop-steps">
+        <li class="loop-step" data-step="0">
+          <span class="mono step-no">01</span>
+          <h3 data-i18n="loop.s1.t">The agent edits</h3>
+          <p data-i18n="loop.s1.p">Each call, like add_text or split_clip, becomes an operation on one shared timeline. Batches apply all at once or not at all, and every step can be undone.</p>
+          <code class="mono">add_text("Cutloupe", start 0.4)</code>
+        </li>
+        <li class="loop-step" data-step="1">
+          <span class="mono step-no">02</span>
+          <h3 data-i18n="loop.s2.t">You watch it land</h3>
+          <p data-i18n="loop.s2.p">The studio redraws on the next frame. Clips the agent touched light up in amber with a note saying what changed. Your own edits show in blue, and the agent sees them too.</p>
+          <code class="mono">studio ← op · 16 ms</code>
+        </li>
+        <li class="loop-step" data-step="2">
+          <span class="mono step-no">03</span>
+          <h3 data-i18n="loop.s3.t">The agent looks</h3>
+          <p data-i18n="loop.s3.p">The look tool renders frames with the same compositor the MP4 export uses, then returns an image and a list of everything on screen. You see where it looked.</p>
+          <code class="mono">look(times: [1.5, 2.5])</code>
+        </li>
+        <li class="loop-step" data-step="3">
+          <span class="mono step-no">04</span>
+          <h3 data-i18n="loop.s4.t">It fixes what it finds</h3>
+          <p data-i18n="loop.s4.p">If a subtitle sits on top of a title, the agent notices, moves it, and checks again. The demo above makes that exact mistake on purpose at 2.5 seconds.</p>
+          <code class="mono">edit_clip(sub, y 0.55 → 0.68)</code>
+        </li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WALKTHROUGH ============ -->
+<section class="section section-tight" id="walkthrough">
+  <div class="wrap">
+    <p class="eyebrow mono"><span class="tc-label">00:00:24:00</span><span data-i18n="walk.eyebrow">Walkthrough</span></p>
+    <h2 data-i18n="walk.title">Two minutes, start to finish.</h2>
+    <p class="section-lede" data-i18n="walk.lede">Recorded in headless Chrome from the real studio and this page, then scored with a track from Cutloupe's own library. There is no narration; the captions are in the picture.</p>
+    <div class="video-frame reveal">
+      <video id="walk-video" controls preload="metadata" playsinline poster="/media/walkthrough-poster.jpg">
+        <source src="/media/walkthrough.mp4" type="video/mp4" />
+      </video>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SEES ============ -->
+<section class="section" id="sees">
+  <div class="wrap">
+    <p class="eyebrow mono"><span class="tc-label">00:00:36:00</span><span data-i18n="sees.eyebrow">What it sees</span></p>
+    <h2 data-i18n="sees.title">What the agent gets back when it looks.</h2>
+    <p class="section-lede" data-i18n="sees.lede">Real output from a test run on Windows 11: an 8-second reel with a test clip, a title, captions from an .srt file and a library track. The image goes to the model. So does the text.</p>
+
+    <div class="sees">
+      <div class="tabs" role="tablist" aria-label="Look output">
+        <button role="tab" aria-selected="true" aria-controls="sees-sheet" id="tab-sheet" data-i18n="sees.tab.sheet">Contact sheet</button>
+        <button role="tab" aria-selected="false" aria-controls="sees-frame" id="tab-frame" data-i18n="sees.tab.frame">Single frame</button>
+      </div>
+      <div class="sees-grid">
+        <div class="sees-media">
+          <img id="sees-sheet" role="tabpanel" aria-labelledby="tab-sheet" src="/media/look-sheet.png" width="992" height="436" alt="Six frames from across the reel, each labelled with its time." loading="lazy" />
+          <img id="sees-frame" role="tabpanel" aria-labelledby="tab-frame" src="/media/look-frame.jpg" width="960" height="540" alt="One full frame at 2.00 seconds: test pattern, title and a caption word in amber." loading="lazy" hidden />
+        </div>
+        <pre class="sees-text mono" aria-label="Text returned with the frame"><span class="c-dim">// look({ t: 2 }) returns this alongside the image</span>
+At 2.00s, bottom to top:
+  fill   #0b0d12 → #1d2433      (2.00s into clip)
+  media  clip #1.mp4            (1.00s into clip)
+  text   "Cutloupe"             at 0.50, 0.30
+  captions 13 words,
+    "An editor your agent can see…" at 0.50, 0.78</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CAPTIONS ============ -->
+<section class="section" id="captions">
+  <div class="wrap two-col">
+    <div>
+      <p class="eyebrow mono"><span class="tc-label">00:00:48:00</span><span data-i18n="cap.eyebrow">Captions</span></p>
+      <h2 data-i18n="cap.title">Captions from a file, a subtitle track, or speech.</h2>
+      <p data-i18n="cap.p1">extract_captions reads an .srt or .vtt file, or the first subtitle stream inside the video. If neither exists and Whisper is installed on your machine, it transcribes the audio locally. Words get their own timings either way.</p>
+      <p data-i18n="cap.p2">The preview on the right is drawn by the same renderer the studio and the export use. Pick a look.</p>
+      <div class="seg" role="radiogroup" aria-label="Caption look" id="cap-looks">
+        <button role="radio" aria-checked="true" data-look="bold-pop">bold-pop</button>
+        <button role="radio" aria-checked="false" data-look="clean">clean</button>
+        <button role="radio" aria-checked="false" data-look="karaoke">karaoke</button>
+        <button role="radio" aria-checked="false" data-look="boxed">boxed</button>
+      </div>
+    </div>
+    <div class="canvas-frame reveal">
+      <canvas id="cap-canvas" width="1280" height="720" aria-label="Caption preview"></canvas>
+      <div class="canvas-meta mono"><span id="cap-tc">00:00</span><span>renderFrame() · 1280×720</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MUSIC ============ -->
+<section class="section" id="music">
+  <div class="wrap">
+    <p class="eyebrow mono"><span class="tc-label">00:01:00:00</span><span data-i18n="music.eyebrow">Music library</span></p>
+    <h2 data-i18n="music.title">Six tracks you can use anywhere.</h2>
+    <p class="section-lede" data-i18n="music.lede">Each one is synthesized from code, so there is no sample to license. They are released under CC0. Press play and your browser builds the track right now, using the same code the server runs.</p>
+    <ul class="tracks" id="tracks"></ul>
+  </div>
+</section>
+
+<!-- ============ TOOLS ============ -->
+<section class="section" id="tools">
+  <div class="wrap">
+    <p class="eyebrow mono"><span class="tc-label">00:01:12:00</span><span data-i18n="tools.eyebrow">Tools</span></p>
+    <h2 data-i18n="tools.title">28 tools, named the way editors talk.</h2>
+    <p class="section-lede" data-i18n="tools.lede">The agent reads these names and descriptions when it decides what to call. Search them.</p>
+    <label class="search">
+      <span class="sr" data-i18n="tools.search">Search tools</span>
+      <input id="tool-search" type="search" placeholder="split, captions, music…" autocomplete="off" />
+    </label>
+    <div class="tool-groups" id="tool-groups"></div>
+  </div>
+</section>
+
+<!-- ============ EXPORTS ============ -->
+<section class="section" id="exports">
+  <div class="wrap">
+    <p class="eyebrow mono"><span class="tc-label">00:01:24:00</span><span data-i18n="exp.eyebrow">Exports</span></p>
+    <h2 data-i18n="exp.title">Finish it in the editor you already use.</h2>
+    <p class="section-lede" data-i18n="exp.lede">Each export writes a NOTES.txt that lists what did not carry over, so nothing disappears without a word. Here is the short version.</p>
+    <div class="table-wrap reveal">
+      <table class="exports">
+        <thead><tr><th data-i18n="exp.h.format">Format</th><th data-i18n="exp.h.opens">Opens in</th><th data-i18n="exp.h.keeps">Carries over</th><th data-i18n="exp.h.drops">Left behind</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">mp4</td><td data-i18n="exp.mp4.o">Anywhere</td><td data-i18n="exp.mp4.k">Everything you see in the studio, H.264 with mixed AAC audio</td><td>—</td></tr>
+          <tr><td class="mono">fcpxml</td><td>DaVinci Resolve, Final Cut Pro</td><td data-i18n="exp.fcp.k">Cuts, trims, tracks, titles, positions, timing, audio levels</td><td data-i18n="exp.fcp.d">Text animation, grades, shapes and fills</td></tr>
+          <tr><td class="mono">xmeml</td><td>Adobe Premiere Pro</td><td data-i18n="exp.xml.k">Video and audio cuts, trims and levels; captions as .srt</td><td data-i18n="exp.xml.d">Titles, shapes and fills (FCP7 XML cannot describe Premiere titles)</td></tr>
+          <tr><td class="mono">capcut</td><td data-i18n="exp.cc.o">CapCut desktop (experimental)</td><td data-i18n="exp.cc.k">Media, text and audio in the community draft layout</td><td data-i18n="exp.cc.d">Shapes, fills, keyframes. Newer builds encrypt drafts and may refuse the folder</td></tr>
+          <tr><td class="mono">remotion</td><td data-i18n="exp.rem.o">Remotion (React)</td><td data-i18n="exp.rem.k">The whole timeline as JSON plus a Reel.tsx composition, with media copied in</td><td data-i18n="exp.rem.d">Remotion's own license applies to companies above three people</td></tr>
+          <tr><td class="mono">otio</td><td data-i18n="exp.otio.o">OpenTimelineIO adapters</td><td data-i18n="exp.otio.k">Tracks and clips; text, shapes and captions as generators with full parameters</td><td data-i18n="exp.otio.d">Overlapping clips on one track</td></tr>
+          <tr><td class="mono">srt · vtt</td><td data-i18n="exp.sub.o">YouTube, players, any editor</td><td data-i18n="exp.sub.k">Caption text and timing</td><td data-i18n="exp.sub.d">Caption styling</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LEDGER ============ -->
+<section class="section" id="ledger">
+  <div class="wrap two-col">
+    <div>
+      <p class="eyebrow mono"><span class="tc-label">00:01:36:00</span><span data-i18n="led.eyebrow">Edit ledger · Solana devnet</span></p>
+      <h2 data-i18n="led.title">A receipt that points at the exact cut.</h2>
+      <p data-i18n="led.p1">Optional. With a devnet keypair set, the ledger tool writes the timeline's hash to a reel account, then seals the exported file's SHA-256 against that head. A seal can only be written for the current head, so it always names the cut that produced the file.</p>
+      <p data-i18n="led.p2">Each seal also says whether the edit was done by an agent, a person or both, and whether the media or voice is synthetic. Anyone can check a file by hashing it. Try it with any file: nothing is uploaded.</p>
+      <dl class="facts mono">
+        <dt data-i18n="led.program">Program</dt>
+        <dd><a href="https://explorer.solana.com/address/G6kWfHR1X2tHFgwHvrc5soiXwUF4bYXprv7YMTJnx5eY?cluster=devnet" target="_blank" rel="noopener">G6kWfHR1…5eY</a></dd>
+        <dt data-i18n="led.network">Network</dt><dd>devnet</dd>
+        <dt data-i18n="led.ix">Instructions</dt><dd>open_reel · commit_cut · seal_export</dd>
+      </dl>
+    </div>
+    <div class="verify reveal" id="verify">
+      <label class="drop" id="drop">
+        <input type="file" id="verify-file" />
+        <span class="drop-title" data-i18n="led.drop">Drop a video here to check its seal</span>
+        <span class="drop-sub" data-i18n="led.drop.sub">The file is hashed in your browser. Only the hash is looked up on devnet.</span>
+      </label>
+      <pre class="verify-out mono" id="verify-out" aria-live="polite"></pre>
+      <button class="link-btn" type="button" id="verify-sample" data-i18n="led.sample">Or check the sealed demo export</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ INSTALL ============ -->
+<section class="section" id="install">
+  <div class="wrap">
+    <p class="eyebrow mono"><span class="tc-label">00:01:48:00</span><span data-i18n="ins.eyebrow">Install</span></p>
+    <h2 data-i18n="ins.title">Five minutes to the first cut.</h2>
+    <p class="section-lede" data-i18n="ins.lede">You need Node 20 or newer, ffmpeg on your PATH, and Chrome or Edge for rendering. Build once, then point your agent at the server.</p>
+    <pre class="code mono" data-copy-block><span class="c-dim"># 1 · build</span>
+git clone https://github.com/bryankwandou/cutloupe
+cd cutloupe
+npm install
+npm run build</pre>
+    <div class="tabs" role="tablist" aria-label="Agent" id="install-tabs">
+      <button role="tab" aria-selected="true" data-tab="claude">Claude Code</button>
+      <button role="tab" aria-selected="false" data-tab="antigravity">Antigravity</button>
+      <button role="tab" aria-selected="false" data-tab="codex">Codex CLI</button>
+      <button role="tab" aria-selected="false" data-tab="json" data-i18n="ins.other">Other clients</button>
+    </div>
+    <pre class="code mono" data-panel="claude" data-copy-block><span class="c-dim"># 2 · register the server (run inside the cutloupe folder)</span>
+claude mcp add cutloupe -- node "$PWD/packages/mcp/bin/cutloupe.mjs"</pre>
+    <pre class="code mono" data-panel="antigravity" data-copy-block hidden><span class="c-dim">// 2 · Agent panel → MCP servers → Manage → View raw config (mcp_config.json)</span>
+{
+  "mcpServers": {
+    "cutloupe": {
+      "command": "node",
+      "args": ["C:/path/to/cutloupe/packages/mcp/bin/cutloupe.mjs"]
+    }
+  }
+}</pre>
+    <pre class="code mono" data-panel="codex" data-copy-block hidden><span class="c-dim"># 2 · ~/.codex/config.toml</span>
+[mcp_servers.cutloupe]
+command = "node"
+args = ["C:/path/to/cutloupe/packages/mcp/bin/cutloupe.mjs"]</pre>
+    <pre class="code mono" data-panel="json" data-copy-block hidden><span class="c-dim">// 2 · any client that reads an mcpServers block over stdio</span>
+{
+  "mcpServers": {
+    "cutloupe": { "command": "node", "args": ["/path/to/cutloupe/packages/mcp/bin/cutloupe.mjs"] }
+  }
+}</pre>
+    <p class="note" data-i18n-html="ins.then">Then ask for something like <q>Make a 20-second vertical teaser from intro.mp4 with bold captions and calm music, and check it before you export.</q> The studio opens at <code>127.0.0.1:4321</code> on the first edit.</p>
+    <details class="env">
+      <summary data-i18n="ins.env">Environment variables</summary>
+      <dl class="mono">
+        <dt>CUTLOUPE_PORT</dt><dd data-i18n="env.port">Studio port. Default 4321; the next free port is used if it is taken.</dd>
+        <dt>CUTLOUPE_HOME</dt><dd data-i18n="env.home">Where projects, music and exports go. Default ~/.cutloupe.</dd>
+        <dt>CUTLOUPE_NO_OPEN</dt><dd data-i18n="env.noopen">Set to 1 to stop the studio opening in your browser.</dd>
+        <dt>CUTLOUPE_CHROME</dt><dd data-i18n="env.chrome">Path to Chrome or Edge, if it is not in the usual place.</dd>
+        <dt>CUTLOUPE_KEYPAIR</dt><dd data-i18n="env.keypair">A devnet keypair file. Turns on the edit ledger.</dd>
+        <dt>CUTLOUPE_WHISPER_MODEL</dt><dd data-i18n="env.whisper">Whisper model name, or a ggml file for whisper.cpp.</dd>
+      </dl>
+    </details>
+  </div>
+</section>
+
+<!-- ============ LIMITS ============ -->
+<section class="section" id="limits">
+  <div class="wrap">
+    <p class="eyebrow mono"><span class="tc-label">00:02:00:00</span><span data-i18n="lim.eyebrow">Limits</span></p>
+    <h2 data-i18n="lim.title">What it does not do yet.</h2>
+    <ul class="limits">
+      <li data-i18n="lim.1">It does not generate footage. It edits and animates what you give it, and adds titles, shapes, captions and music.</li>
+      <li data-i18n="lim.2">Speech-to-text needs Whisper installed locally. Without it, captions come from subtitle files or tracks.</li>
+      <li data-i18n="lim.3">The FCPXML, Premiere and CapCut exports pass structural tests, but we have not yet opened them in Resolve, Premiere or CapCut on this release.</li>
+      <li data-i18n="lim.4">MP4 export renders every frame through headless Chrome. On our test machine an 8-second 1080p reel took about two and a half minutes.</li>
+      <li data-i18n="lim.5">The npm package is not published yet, so install from GitHub for now.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ FAQ ============ -->
+<section class="section" id="faq">
+  <div class="wrap">
+    <p class="eyebrow mono"><span class="tc-label">00:02:12:00</span><span data-i18n="faq.eyebrow">Questions</span></p>
+    <h2 data-i18n="faq.title">Questions people ask first.</h2>
+    <div class="faq">
+      <details><summary data-i18n="faq.1.q">How is this different from asking an agent to write an ffmpeg command?</summary><p data-i18n="faq.1.a">An ffmpeg command is a guess the agent cannot check. Here the agent works on a timeline it can read back, sees rendered frames, and you can step in at any moment without breaking its plan.</p></details>
+      <details><summary data-i18n="faq.2.q">Can I edit while the agent is working?</summary><p data-i18n="faq.2.a">Yes. Drag, trim or delete in the studio. Your edits go through the same operation log, the agent sees them on its next call, and undo covers both of you.</p></details>
+      <details><summary data-i18n="faq.3.q">Does my footage leave my machine?</summary><p data-i18n="faq.3.a">No. The server, the studio and the renderer all run on 127.0.0.1. The only network call is the optional ledger, which sends hashes, never media.</p></details>
+      <details><summary data-i18n="faq.4.q">Why Solana, and do I need it?</summary><p data-i18n="faq.4.a">You do not need it. The ledger exists for people who publish edited or AI-assisted video and want a public, cheap record of which cut produced which file. It runs on devnet today.</p></details>
+      <details><summary data-i18n="faq.5.q">What does it cost?</summary><p data-i18n="faq.5.a">Nothing. Cutloupe is MIT-licensed, and the music library is CC0.</p></details>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-row">
+    <div class="brand"><img src="/logo.svg" width="22" height="22" alt="" /><span>cutloupe</span></div>
+    <p data-i18n="foot.line">MIT license. Built on ffmpeg, headless Chrome and the Model Context Protocol.</p>
+    <nav class="foot-links">
+      <a href="https://github.com/bryankwandou/cutloupe">GitHub</a>
+      <a href="/studio/" data-i18n="foot.studio">Studio demo</a>
+      <a href="https://github.com/bryankwandou/cutloupe/blob/main/docs/DEVNET.md" data-i18n="foot.devnet">Devnet proof</a>
+    </nav>
+  </div>
+</footer>
+
+<script type="module" src="/assets/main.js"></script>
+</body>
+</html>

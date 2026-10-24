@@ -1,0 +1,20 @@
+{
+  "name": "cutloupe",
+  "version": "0.1.0",
+  "description": "A video editor your agent can see. MCP server with a live studio, exports to Remotion, CapCut, Premiere and DaVinci Resolve, and an on-chain edit ledger.",
+  "type": "module",
+  "bin": { "cutloupe": "bin/cutloupe.mjs" },
+  "files": ["bin", "dist", "studio"],
+  "license": "MIT",
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.17.4",
+    "@solana/web3.js": "1.98.0",
+    "puppeteer-core": "23.11.1",
+    "ws": "8.18.0",
+    "zod": "3.25.76"
+  },
+  "devDependencies": {
+    "@cutloupe/core": "0.1.0"
+  }
+}

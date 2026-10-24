@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.next/
+out/
+.env
+.env.*
+!.env.example
+*.log
+.vercel
+.cutloupe/
+target/
+.anchor/
+*-keypair.json
+scratch/
+.smoke/
+site/media/.walk-frames/
+apps/site/public/media/.walk-frames/

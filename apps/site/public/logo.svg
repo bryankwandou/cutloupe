@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Cutloupe">
+  <title>Cutloupe</title>
+  <defs>
+    <clipPath id="cl-lens"><circle cx="27" cy="27" r="15.2"/></clipPath>
+  </defs>
+  <rect width="64" height="64" rx="15" fill="#0e0f11"/>
+  <g clip-path="url(#cl-lens)">
+    <rect x="8" y="8" width="40" height="40" fill="#7aa7ff"/>
+    <path d="M31.5 8H48v40H22.5z" fill="#ffb224"/>
+    <!-- sprocket holes: the lens is looking at a strip of film -->
+    <g fill="#0e0f11" opacity=".55">
+      <rect x="14" y="13.2" width="3.2" height="2.6" rx=".6"/><rect x="20" y="13.2" width="3.2" height="2.6" rx=".6"/>
+      <rect x="31" y="13.2" width="3.2" height="2.6" rx=".6"/><rect x="37" y="13.2" width="3.2" height="2.6" rx=".6"/>
+      <rect x="14" y="38.2" width="3.2" height="2.6" rx=".6"/><rect x="20" y="38.2" width="3.2" height="2.6" rx=".6"/>
+      <rect x="31" y="38.2" width="3.2" height="2.6" rx=".6"/><rect x="37" y="38.2" width="3.2" height="2.6" rx=".6"/>
+    </g>
+    <!-- the cut -->
+    <path d="M31.5 6 22.5 50" stroke="#0e0f11" stroke-width="3.2"/>
+  </g>
+  <circle cx="27" cy="27" r="16.6" fill="none" stroke="#ecedee" stroke-width="3.6"/>
+  <path d="M39.2 39.2 52 52" stroke="#ecedee" stroke-width="6.4" stroke-linecap="round"/>
+</svg>
