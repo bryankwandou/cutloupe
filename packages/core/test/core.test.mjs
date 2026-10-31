@@ -103,7 +103,24 @@ test("exports are well formed", () => {
   assert.match(xm, /<start>30<\/start><end>150<\/end><in>60<\/in><out>180<\/out>/);
   const otio = JSON.parse(toOtio(p).files[0].content);
   assert.equal(otio.OTIO_SCHEMA, "Timeline.1");
-  JSON.parse(toCapcutDraft(p).files.find((f) => f.path.endsWith(".json")).content);
+  // the media clip sits on top of the fill and the captions overlap the title: none may be dropped
+  const names = otio.tracks.children.map((t) => t.name);
+  assert.ok(names.includes("Video 2") && names.includes("Text 2"), names.join());
+  const ids = otio.tracks.children.flatMap((t) => t.children).map((c) => c.metadata?.cutloupe?.id).filter(Boolean);
+  for (const id of ["bg", "m1", "title", "cap"]) assert.ok(ids.includes(id), id);
+  const cap = toCapcutDraft(p);
+  const draft = JSON.parse(cap.files.find((f) => f.path === "draft_content.json").content);
+  const meta = JSON.parse(cap.files.find((f) => f.path === "draft_meta_info.json").content);
+  const mats = new Set(Object.values(draft.materials).flat().map((m) => m.id));
+  for (const t of draft.tracks) {
+    for (const s of t.segments) for (const r of [s.material_id, ...s.extra_material_refs]) assert.ok(mats.has(r), `dangling ${r}`);
+    const sorted = [...t.segments].sort((a, b) => a.target_timerange.start - b.target_timerange.start);
+    sorted.forEach((s, i) => i && assert.ok(sorted[i - 1].target_timerange.start + sorted[i - 1].target_timerange.duration <= s.target_timerange.start, "overlap in " + t.name));
+  }
+  const capClip = p.tracks[2].clips.find((c) => c.id === "cap");
+  assert.equal(draft.materials.texts.length, 1 + captionPhrases(capClip.words, capClip.maxWords).length, "title plus one text per caption phrase");
+  assert.equal(meta.draft_materials[0].value[0].id, draft.materials.videos[0].local_material_id);
+  assert.equal(new Set(Object.values(draft.materials).flat().map((m) => m.id)).size, Object.values(draft.materials).flat().length, "ids are unique");
   const rem = toRemotion(p);
   const tl = JSON.parse(rem.files.find((f) => f.path.endsWith("timeline.json")).content);
   assert.equal(tl.assets.v.src, "media/v.mp4");

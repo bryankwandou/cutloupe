@@ -152,13 +152,14 @@ export function toOtio(p: Project): ExportBundle {
   const fps = p.fps;
   const RT = (t: number) => ({ OTIO_SCHEMA: "RationalTime.1", rate: fps, value: Math.round(t * fps) });
   const range = (s: number, d: number) => ({ OTIO_SCHEMA: "TimeRange.1", start_time: RT(s), duration: RT(d) });
+  // clips that overlap on one Cutloupe track go to extra tracks, later clips stacked above
   const tracks = p.tracks
     .filter((tr) => !tr.hidden)
-    .map((tr) => {
+    .flatMap((tr) => lanes(tr.clips).map((clips, li) => ({ tr, clips, name: li ? `${tr.name} ${li + 1}` : tr.name })))
+    .map(({ tr, clips, name }) => {
       const children: unknown[] = [];
       let cursor = 0;
-      for (const c of [...tr.clips].sort((a, b) => a.start - b.start)) {
-        if (c.start < cursor - 1e-6) continue; // OTIO tracks are sequential; overlapping clips are skipped
+      for (const c of [...clips].sort((a, b) => a.start - b.start)) {
         if (c.start > cursor + 1e-6) children.push({ OTIO_SCHEMA: "Gap.1", name: "", source_range: range(0, c.start - cursor) });
         const a = c.kind === "media" || c.kind === "audio" ? p.assets[c.assetId] : undefined;
         children.push({
@@ -175,7 +176,7 @@ export function toOtio(p: Project): ExportBundle {
         });
         cursor = c.start + c.duration;
       }
-      return { OTIO_SCHEMA: "Track.1", name: tr.name, kind: tr.kind === "audio" ? "Audio" : "Video", children };
+      return { OTIO_SCHEMA: "Track.1", name, kind: tr.kind === "audio" ? "Audio" : "Video", children };
     });
   const doc = {
     OTIO_SCHEMA: "Timeline.1",
@@ -187,7 +188,7 @@ export function toOtio(p: Project): ExportBundle {
   return {
     format: "otio",
     files: [{ path: `${slug(p.name)}.otio`, content: JSON.stringify(doc, null, 2) }],
-    notes: ["Overlapping clips on one track are skipped because OTIO tracks are strictly sequential.", "Text, shapes and captions travel as GeneratorReference with their full parameters in metadata."],
+    notes: ["Clips that overlap on one track are spread over extra tracks (\"Video 2\", ...) because OTIO tracks are strictly sequential.", "Text, shapes and captions travel as GeneratorReference with their full parameters in metadata."],
   };
 }
 
@@ -198,66 +199,137 @@ function stripForOtio(c: Clip): Record<string, unknown> {
 
 // ---------- CapCut draft (experimental) ----------
 
+// Field shapes follow drafts saved by CapCut desktop 9.x: every segment points
+// at its own speed/placeholder/channel/vocal (+canvas/color for video) materials,
+// and local media is registered in draft_meta_info.json's draft_materials.
 export function toCapcutDraft(p: Project): ExportBundle {
   const us = (t: number) => Math.round(t * 1_000_000);
+  // deterministic 128-bit ids, so re-exporting the same project yields the same draft
   const uuid = (seed: string) => {
-    let h = 2166136261;
-    for (const ch of seed) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
-    const hex = (h >>> 0).toString(16).padStart(8, "0");
-    return `${hex}-${hex.slice(0, 4)}-4${hex.slice(5, 8)}-a${hex.slice(1, 4)}-${(hex + hex).slice(0, 12)}`.toUpperCase();
+    const hex = [0, 1, 2, 3].map((k) => {
+      let h = 2166136261 ^ k;
+      for (const ch of seed) h = Math.imul(h ^ ch.charCodeAt(0), 16777619);
+      return (h >>> 0).toString(16).padStart(8, "0");
+    }).join("");
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-4${hex.slice(13, 16)}-a${hex.slice(17, 20)}-${hex.slice(20, 32)}`.toUpperCase();
   };
-  const videos: unknown[] = [], audios: unknown[] = [], texts: unknown[] = [];
-  const tracks: unknown[] = [];
+  const now = Date.now() * 1000;
+  const M: Record<string, unknown[]> = { videos: [], audios: [], texts: [], speeds: [], placeholder_infos: [], sound_channel_mappings: [], vocal_separations: [], canvases: [], material_colors: [] };
+  const extras = (seed: string, video: boolean) => {
+    const ids = ["speed", "ph", "ch", "voc", ...(video ? ["canvas", "color"] : [])].map((k) => uuid(seed + ":" + k));
+    M.speeds.push({ id: ids[0], type: "speed", speed: 1, mode: 0, curve_speed: null });
+    M.placeholder_infos.push({ id: ids[1], type: "placeholder_info", error_path: "", error_text: "", meta_type: "none", res_path: "", res_text: "" });
+    M.sound_channel_mappings.push({ id: ids[2], type: "none", audio_channel_mapping: 0, is_config_open: false });
+    M.vocal_separations.push({ id: ids[3], type: "vocal_separation", choice: 0, enter_from: "", final_algorithm: "", production_path: "", removed_sounds: [], time_range: null });
+    if (video) {
+      M.canvases.push({ id: ids[4], type: "canvas_color", album_image: "", blur: 0, color: "", image: "", image_id: "", image_name: "", source_platform: 0, team_id: "" });
+      M.material_colors.push({ id: ids[5], type: "material_color", gradient_angle: 90, gradient_colors: [], gradient_percents: [], height: 0, is_color_clip: false, is_gradient: false, solid_color: "", width: 0 });
+    }
+    return ids;
+  };
+  const crop = { upper_left_x: 0, upper_left_y: 0, upper_right_x: 1, upper_right_y: 0, lower_left_x: 0, lower_left_y: 1, lower_right_x: 1, lower_right_y: 1 };
+  const registered: unknown[] = [];
+  const path = (a: Asset) => (a.path ?? a.src).replace(/\//g, "\\");
   for (const a of Object.values(p.assets)) {
-    if (a.kind === "audio") audios.push({ id: uuid(a.id), path: a.path ?? a.src, name: a.name, duration: us(a.duration), type: "extract_music" });
-    else videos.push({ id: uuid(a.id), path: a.path ?? a.src, material_name: a.name, duration: us(a.duration || 10), width: a.width ?? p.width, height: a.height ?? p.height, type: a.kind === "image" ? "photo" : "video" });
+    const local = uuid(a.id + ":local");
+    registered.push({ ai_group_type: "", create_time: -1, duration: us(a.duration || 10), enter_from: 0, extra_info: a.name, file_Path: path(a), height: a.height ?? 0, id: local, import_time: -1, import_time_ms: -1, item_source: 1, material_color_tag: "", md5: "", metetype: a.kind === "audio" ? "music" : a.kind === "image" ? "photo" : "video", roughcut_time_range: { duration: -1, start: -1 }, sub_time_range: { duration: -1, start: -1 }, type: 0, width: a.width ?? 0 });
+    if (a.kind === "audio") M.audios.push({ id: uuid(a.id), path: path(a), name: a.name, duration: us(a.duration), type: "extract_music", category_id: "", category_name: "local", check_flag: 1, music_id: "", source_platform: 0, wave_points: [], local_material_id: local });
+    else M.videos.push({ id: uuid(a.id), path: path(a), material_name: a.name, type: a.kind === "image" ? "photo" : "video", duration: us(a.kind === "image" ? 10800 : a.duration), width: a.width ?? p.width, height: a.height ?? p.height, category_id: "", category_name: "local", check_flag: 7, crop, crop_ratio: "free", crop_scale: 1, has_audio: !!a.hasAudio, extra_type_option: 0, formula_id: "", local_material_id: local, source_platform: 0 });
   }
+  const textMaterial = (id: string, text: string, size: number, color: string, bold: boolean, align: string) =>
+    M.texts.push({
+      id, type: "text",
+      content: JSON.stringify({ styles: [{ range: [0, text.length], size, bold, italic: false, underline: false, fill: { alpha: 1, content: { render_type: "solid", solid: { alpha: 1, color: hexToRgb01(color) } } } }], text }),
+      alignment: align === "left" ? 0 : align === "right" ? 2 : 1, font_size: size, text_color: color.toUpperCase(), typesetting: 0, letter_spacing: 0, line_spacing: 0.02, line_feed: 1, line_max_width: 0.82, force_apply_line_max_width: false, check_flag: 7, fixed_width: -1, fixed_height: -1,
+    });
+
+  type Seg = { seed: string; start: number; duration: number; tf: Clip["transform"]; material: string; source: [number, number]; volume: number; video: boolean };
+  const groups: { type: "video" | "audio" | "text"; name: string; segs: Seg[] }[] = [];
+  let skipped = 0;
   for (const tr of p.tracks) {
     if (tr.hidden) continue;
-    const segments: unknown[] = [];
-    let type: "video" | "audio" | "text" = tr.kind === "audio" ? "audio" : "video";
+    const media: Seg[] = [], text: Seg[] = [];
     for (const c of tr.clips) {
-      const base = {
-        id: uuid(c.id),
-        target_timerange: { start: us(c.start), duration: us(c.duration) },
-        visible: true,
-        clip: { alpha: c.transform.opacity, rotation: c.transform.rotation, scale: { x: c.transform.scale, y: c.transform.scale }, transform: { x: (c.transform.x - 0.5) * 2, y: (0.5 - c.transform.y) * 2 }, flip: { horizontal: false, vertical: false } },
-      };
       if (c.kind === "media" || c.kind === "audio") {
-        segments.push({ ...base, material_id: uuid(c.assetId), source_timerange: { start: us(c.trimIn), duration: us(c.duration) }, volume: c.volume, speed: 1 });
+        if (!p.assets[c.assetId]) continue;
+        const video = c.kind === "media";
+        media.push({ seed: c.id, start: c.start, duration: c.duration, tf: c.transform, material: uuid(c.assetId), source: [c.trimIn, c.duration], volume: tr.muted ? 0 : c.volume, video });
       } else if (c.kind === "text") {
-        type = "text";
-        const mid = uuid(c.id + ":m");
-        texts.push({ id: mid, type: "text", content: JSON.stringify({ text: c.text, styles: [{ range: [0, c.text.length], size: c.style.size / 10, bold: c.style.weight >= 600, fill: { content: { solid: { color: hexToRgb01(c.style.color) } } } }] }) });
-        segments.push({ ...base, material_id: mid, source_timerange: null });
-      }
+        const t = c as TextClip;
+        const mid = uuid(c.id + ":text");
+        textMaterial(mid, t.text, Math.round(t.style.size / 6), t.style.color, t.style.weight >= 600, t.style.align);
+        text.push({ seed: c.id, start: c.start, duration: c.duration, tf: c.transform, material: mid, source: [0, c.duration], volume: 1, video: false });
+      } else if (c.kind === "captions") {
+        const cc = c as CaptionClip;
+        captionPhrases(cc.words, cc.maxWords).forEach((ph, i) => {
+          const mid = uuid(`${c.id}:cap${i}`);
+          const t0 = c.start + ph[0].t0, d = ph[ph.length - 1].t1 - ph[0].t0;
+          textMaterial(mid, ph.map((w) => w.w).join(" "), Math.round(cc.size / 6), "#ffffff", true, "center");
+          text.push({ seed: `${c.id}:cap${i}`, start: t0, duration: d, tf: c.transform, material: mid, source: [0, d], volume: 1, video: false });
+        });
+      } else skipped++;
     }
-    if (segments.length) tracks.push({ id: uuid(tr.id), type, segments, attribute: 0, flag: 0 });
+    if (media.length) groups.push({ type: tr.kind === "audio" ? "audio" : "video", name: tr.name, segs: media });
+    if (text.length) groups.push({ type: "text", name: tr.name, segs: text });
   }
+  const renderBase = { audio: 11000, video: 14000, text: 15000 };
+  const tracks = groups.flatMap((g) => lanes(g.segs).map((segs, li) => ({ g, segs, name: li ? `${g.name} ${li + 1}` : g.name }))).map(({ g, segs, name }, ti) => {
+    const trackId = uuid(`track:${ti}:${name}`);
+    return {
+      id: trackId, type: g.type, name, attribute: 0, is_default_name: false, flag: 0,
+      segments: [...segs].sort((a, b) => a.start - b.start).map((s, si) => ({
+        id: uuid(s.seed + ":seg"), material_id: s.material, raw_segment_id: trackId,
+        target_timerange: { start: us(s.start), duration: us(s.duration) },
+        source_timerange: { start: us(s.source[0]), duration: us(s.source[1]) },
+        speed: 1, volume: s.volume, visible: true, reverse: false,
+        clip: { alpha: s.tf.opacity, rotation: s.tf.rotation, scale: { x: s.tf.scale, y: s.tf.scale }, transform: { x: (s.tf.x - 0.5) * 2, y: (0.5 - s.tf.y) * 2 }, flip: { horizontal: false, vertical: false } },
+        render_index: renderBase[g.type] + ti * 100 + si, track_render_index: ti, track_attribute: 0,
+        extra_material_refs: extras(s.seed, s.video), common_keyframes: [], keyframe_refs: [],
+      })),
+    };
+  });
+  const duration = us(projectDuration(p));
+  const ratio = p.width === p.height ? "1:1" : p.width * 9 === p.height * 16 ? "16:9" : p.width * 16 === p.height * 9 ? "9:16" : "original";
   const draft = {
-    id: uuid(p.id),
-    name: p.name,
-    canvas_config: { width: p.width, height: p.height, ratio: "original" },
-    duration: us(projectDuration(p)),
-    fps: p.fps,
-    materials: { videos, audios, texts },
-    tracks,
-    version: 360000,
+    id: uuid(p.id), version: 360000, new_version: "110.0.0", name: p.name, duration, fps: p.fps,
+    canvas_config: { width: p.width, height: p.height, ratio },
+    platform: { app_source: "cc", app_version: "9.5.0", os: "windows" },
+    tracks, materials: M, extra_info: { created_via: "cutloupe" },
   };
-  const meta = { draft_name: p.name, draft_id: uuid(p.id), tm_duration: us(projectDuration(p)), draft_fold_path: "", draft_root_path: "" };
+  const meta = {
+    draft_cover: "draft_cover.jpg", draft_fold_path: "", draft_id: uuid(p.id), draft_is_ai_shorts: false, draft_is_invisible: false,
+    draft_json_file: "", draft_name: p.name, draft_new_version: "", draft_root_path: "", draft_timeline_materials_size: 0,
+    tm_draft_create: now, tm_draft_modified: now, tm_draft_removed: 0, tm_duration: duration,
+    draft_materials: [{ type: 0, value: registered }],
+  };
+  const content = JSON.stringify(draft);
+  const notes = [
+    "CapCut has no public editing API. This draft mirrors the unencrypted layout CapCut desktop 9.x saves (draft_content.json and draft_info.json).",
+    "Copy the folder into CapCut's drafts folder (Windows: %LOCALAPPDATA%\\CapCut\\User Data\\Projects\\com.lveditor.draft) and restart CapCut. Builds that encrypt drafts may refuse it; then import the MP4 and captions.srt.",
+    "Captions arrive as plain white text segments; text styling is approximate.",
+  ];
+  if (skipped) notes.push(`${skipped} shape/fill clips and all keyframe motion are not mapped; render them into the MP4 first.`);
   return {
     format: "capcut",
     files: [
-      { path: "draft_content.json", content: JSON.stringify(draft) },
+      { path: "draft_content.json", content },
+      { path: "draft_info.json", content },
       { path: "draft_meta_info.json", content: JSON.stringify(meta) },
       ...(cues(p).length ? [{ path: "captions.srt", content: toSrt(p) }] : []),
     ],
-    notes: [
-      "CapCut has no public editing API. This draft follows the unencrypted draft_content.json layout that community tools target.",
-      "Recent CapCut desktop builds encrypt their drafts and may refuse this folder. If so, import the exported MP4 and captions.srt instead.",
-      "Shapes, fills and keyframe motion are not mapped; render them into the MP4 first.",
-    ],
+    notes,
   };
+}
+
+// First-fit packing of possibly overlapping items into non-overlapping lanes,
+// for formats whose tracks are strictly sequential (OTIO, CapCut).
+function lanes<T extends { start: number; duration: number }>(items: T[]): T[][] {
+  const out: T[][] = [];
+  for (const c of items) {
+    const lane = out.find((l) => l.every((o) => o.start + o.duration <= c.start + 1e-6 || c.start + c.duration <= o.start + 1e-6));
+    if (lane) lane.push(c); else out.push([c]);
+  }
+  return out;
 }
 
 function hexToRgb01(hex: string): number[] {

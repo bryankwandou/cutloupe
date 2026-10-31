@@ -45,10 +45,20 @@ export class Renderer {
       headless: true,
       args: ["--autoplay-policy=no-user-gesture-required", "--mute-audio", "--hide-scrollbars", "--disable-background-timer-throttling"],
     });
-    this.page = await this.browser.newPage();
-    await this.page.setViewport({ width: 800, height: 600 });
-    await this.page.goto(`${this.baseUrl()}/?render=1`, { waitUntil: "load" });
-    await this.page.waitForFunction("window.__cutloupe && window.__cutloupe.ready", { timeout: 20000 });
+    try {
+      const page = await this.browser.newPage();
+      await page.setViewport({ width: 800, height: 600 });
+      // A cold start on a slow or busy disk can take well over 30 s.
+      await page.goto(`${this.baseUrl()}/?render=1`, { waitUntil: "load", timeout: 120_000 });
+      await page.waitForFunction("window.__cutloupe && window.__cutloupe.ready", { timeout: 60_000 });
+      this.page = page;
+    } catch (e) {
+      // never hand a half-loaded page to the next call
+      await this.browser.close().catch(() => {});
+      this.browser = null;
+      this.page = null;
+      throw e;
+    }
     this.loadedKey = "";
     return this.page;
   }
